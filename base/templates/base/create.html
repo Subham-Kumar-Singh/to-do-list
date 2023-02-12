@@ -1,0 +1,15 @@
+<h1>create page</h1>
+
+<a href="{% url 'taskList' %}">Go Back</a>
+<br>
+<div class="row">
+    <div class="col-md-7">
+        <div class="card card-body">
+            <form action="" method="POST">
+                {% csrf_token %}
+                {{form.as_p}}
+                <input type="submit" ,name="Submit">
+            </form>
+        </div>
+    </div>
+</div>
