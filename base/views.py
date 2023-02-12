@@ -19,7 +19,7 @@ def taskdetail(request, pk):
 
 
 def create(request):
-    
+
     form = TaskForm()
     if request.method == 'POST':
         form = TaskForm(request.POST)
@@ -28,3 +28,31 @@ def create(request):
             return redirect('/')
     context = {'form': form}
     return render(request, 'base/create.html', context)
+
+
+def update(request, pk):
+    task = Task.objects.get(id=pk)
+
+    taskform = TaskForm(instance=task)
+    if request.method == 'POST':
+        taskform = TaskForm(request.POST, instance=task)
+        if taskform.is_valid:
+            taskform.save()
+            return redirect('/')
+
+    # if request.method=='POST':
+
+    context = {'taskform': taskform}
+    return render(request, 'base/update.html', context)
+
+
+def delete(request, pk):
+
+    task = Task.objects.get(id=pk)
+
+    if request.method == 'POST':
+        task.delete()
+        return redirect('/')
+
+    context = {'task':task}
+    return render(request, 'base/delete.html', context)
