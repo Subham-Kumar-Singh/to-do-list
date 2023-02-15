@@ -6,8 +6,13 @@ from .models import *
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from .decorators import *
+
+from django.views.decorators.cache import never_cache
+
 
 # Create your views here.
+
 
 @login_required(login_url='login')
 def taskList(request):
@@ -63,14 +68,31 @@ def delete(request, pk):
     context = {'task': task}
     return render(request, 'base/delete.html', context)
 
-
+@unauthenticated_user
+@never_cache
 def registerPage(request):
-    context = {}
+
+    form = CreateUserForm()
+
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    else:
+        if request.method == 'POST':
+            form = CreateUserForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('/')
+            else:
+                messages.info(request, 'Not registered')
+                return redirect('register')
+    context = {'form': form}
     return render(request, 'base/register.html', context)
 
-
+@unauthenticated_user
+@never_cache
 def loginPage(request):
-
+    
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -81,6 +103,7 @@ def loginPage(request):
             login(request, user)
             return redirect('taskList')
         else:
+            
             messages.info(request, 'Username or password is incorrect ')
 
     context = {}
@@ -90,4 +113,3 @@ def loginPage(request):
 def logoutPage(request):
     logout(request)
     return redirect('login')
-
