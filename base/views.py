@@ -9,7 +9,6 @@ from django.contrib import messages
 
 # Create your views here.
 
-
 @login_required(login_url='login')
 def taskList(request):
     list = Task.objects.all()
@@ -91,3 +90,4 @@ def loginPage(request):
 def logoutPage(request):
     logout(request)
     return redirect('login')
+
