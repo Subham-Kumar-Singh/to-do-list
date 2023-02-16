@@ -16,7 +16,7 @@ from django.views.decorators.cache import never_cache
 
 @login_required(login_url='login')
 def taskList(request):
-    list = Task.objects.all()
+    list = Task.objects.filter(user=request.user)
     context = {'list': list}
     return render(request, 'base/task_list.html', context)
 
@@ -29,15 +29,15 @@ def taskdetail(request, pk):
 
 @login_required(login_url='login')
 def create(request):
-
     form = TaskForm()
     if request.method == 'POST':
-        form = TaskForm(request.POST)
-        if form.is_valid:
-            form.save()
-            return redirect('/')
+        form = TaskForm(user=request.user, title=request.POST['title'])
+        # if form.is_valid:
+        form.save()
+        return redirect('/')
+    
     context = {'form': form}
-    return render(request, 'base/create.html', context)
+    return render(request, 'base/create.html',context)
 
 
 @login_required(login_url='login')
@@ -68,6 +68,7 @@ def delete(request, pk):
     context = {'task': task}
     return render(request, 'base/delete.html', context)
 
+
 @unauthenticated_user
 @never_cache
 def registerPage(request):
@@ -89,10 +90,11 @@ def registerPage(request):
     context = {'form': form}
     return render(request, 'base/register.html', context)
 
+
 @unauthenticated_user
 @never_cache
 def loginPage(request):
-    
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -103,7 +105,7 @@ def loginPage(request):
             login(request, user)
             return redirect('taskList')
         else:
-            
+
             messages.info(request, 'Username or password is incorrect ')
 
     context = {}
