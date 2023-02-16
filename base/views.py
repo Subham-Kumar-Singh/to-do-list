@@ -4,7 +4,7 @@ from django.forms import inlineformset_factory
 from .forms import *
 from .models import *
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from .decorators import *
 
@@ -28,16 +28,20 @@ def taskdetail(request, pk):
 
 
 @login_required(login_url='login')
+# @permission_required('todo.can_view_all_todos', raise_exception=True) 
 def create(request):
-    form = TaskForm()
-    if request.method == 'POST':
-        form = TaskForm(user=request.user, title=request.POST['title'])
-        # if form.is_valid:
-        form.save()
-        return redirect('/')
-    
-    context = {'form': form}
-    return render(request, 'base/create.html',context)
+    if request.user.is_authenticated:
+        user=request.user
+        form = TaskForm(request.POST)   
+        if form.is_valid():
+            todo=form.save()
+            todo.user=user
+            # if form.is_valid:
+            todo.save()
+            return redirect('/')
+        else:
+            context = {'form': form}
+            return render(request, 'base/create.html', context)
 
 
 @login_required(login_url='login')
