@@ -5,6 +5,8 @@ from . import views
 
 urlpatterns = [
     path('', views.taskList, name="taskList"),
+    path('activation_link',views.activateEmail,name="activate_link"),
+    path('activate/<uidb64>/<token>/',views.activate,name="activate"),
     path('task/<str:pk>/', views.taskdetail, name="taskdetail"),
     path('create/', views.create, name='create'),
     path('update/<str:pk>/', views.update, name="update"),

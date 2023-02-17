@@ -3,15 +3,60 @@ from django.http import HttpResponse
 from django.forms import inlineformset_factory
 from .forms import *
 from .models import *
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth import login, logout, authenticate,get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .decorators import *
 
 from django.views.decorators.cache import never_cache
 
+# Email-verification imports
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
 
+from .token import account_activation_token
 # Create your views here.
+
+
+def activate(request, uidb64, token):
+    User=get_user_model()
+    try:
+        uid=force_str(urlsafe_base64_decode(uidb64))
+        user=User.objects.get(pk=uid)
+    except:
+        user=None
+        
+    if user is not None and account_activation_token.check_token(user,token):
+        user.is_active=True
+        user.save()
+
+        messages.success(request, "Thank You for you email Configuration. Now you may login your Account.")
+        return redirect('login')
+    else:
+        messages.error(request,"Activation link is inlvalid !")
+        
+    return redirect('login')
+
+
+def activateEmail(request, user, to_email):
+    mail_subject = 'Activate your user account.'
+    message = render_to_string("base/template_activate_account.html", {
+        'user': user.username,
+        'domain': get_current_site(request).domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+        "protocol": 'https' if request.is_secure() else 'http',
+    })
+    email = EmailMessage(mail_subject, message, to=[to_email])
+    if email.send():
+        messages.success(request, f'Dear <b>{user}</b>,please go to <b>{to_email}</b> inbox and click on \
+                    recieved activation link to confirm and complete the registration.')
+    else:
+        messages.error(
+            request, f'Problem sending email to {to_email}, check if you typed it correctly.')
 
 
 @login_required(login_url='login')
@@ -28,15 +73,13 @@ def taskdetail(request, pk):
 
 
 @login_required(login_url='login')
-# @permission_required('todo.can_view_all_todos', raise_exception=True) 
 def create(request):
     if request.user.is_authenticated:
-        user=request.user
-        form = TaskForm(request.POST)   
+        user = request.user
+        form = TaskForm(request.POST)
         if form.is_valid():
-            todo=form.save()
-            todo.user=user
-            # if form.is_valid:
+            todo = form.save()
+            todo.user = user
             todo.save()
             return redirect('/')
         else:
@@ -76,7 +119,6 @@ def delete(request, pk):
 @unauthenticated_user
 @never_cache
 def registerPage(request):
-
     form = CreateUserForm()
 
     if request.user.is_authenticated:
@@ -86,8 +128,14 @@ def registerPage(request):
         if request.method == 'POST':
             form = CreateUserForm(request.POST)
             if form.is_valid():
-                form.save()
-                return redirect('/')
+                user = form.save(commit=False)
+                user.is_active = False
+                user.save()
+                activateEmail(request, user, form.cleaned_data.get('email'))
+                username = form.cleaned_data.get('username')
+                messages.success(
+                    request, "account was created for " + username)
+                return redirect('login')
             else:
                 messages.info(request, 'Not registered')
                 return redirect('register')
