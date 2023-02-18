@@ -20,7 +20,6 @@ from django.core.mail import EmailMessage
 from .token import account_activation_token
 # Create your views here.
 
-
 def activate(request, uidb64, token):
     User=get_user_model()
     try:
@@ -167,3 +166,4 @@ def loginPage(request):
 def logoutPage(request):
     logout(request)
     return redirect('login')
+

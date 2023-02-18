@@ -1,8 +1,14 @@
+{% include 'base/navbar_forview.html' %}
+
+{% block content %}
+
+<a class="btn btn-primary" href="{% url 'taskList' %}" role="button">Go Back</a>
+
 <br>
 <div class="row">
     <div class="col-md-7">
-        <div class="card card-body">
-            <form action="" method="POST">
+        <div class="card" style="margin:30px 0px 0px 30px">
+            <form action="" method="POST" class="create_form">
                 {% csrf_token %}
                 {{taskform.as_p}}
                 <input type="submit" ,name="Submit">
@@ -10,3 +16,5 @@
         </div>
     </div>
 </div>
+
+{% endblock content %}

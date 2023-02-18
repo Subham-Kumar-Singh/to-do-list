@@ -2,24 +2,70 @@
 
 {% block content %}
 
-<h1>My to do list</h1>
+{% include 'base/navbar.html' %}
 
-<a href="{% url 'create' %}">Add Task</a>
-<table>
-    <tr>
-        <th>Item</th>
-        <th></th>
-    </tr>
+<div>
+    <h1>My To Do list</h1>
+    <center><a class="btn btn-success" href="{% url 'create' %}" role="button">Add Task</a></center>
+</div>
+<br>    
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">S.no</th>
+        <th scope="col">List</th>
+        <th scope="col">View</th>
+        <th scope="col">Update</th>
+        <th scope="col">Delete</th>
+      </tr>
+    </thead>
+    <tbody>
     {% for i in list %}
-    <tr>
+      <tr>
+        <th scope="row">{{forloop.counter}}</th>
         <td>{{i.title}}</td>
         <td><a href="{% url 'taskdetail' i.id %}">view</a></td>
         <td><a href="{% url 'update' i.id %}">Update</a></td>
         <td><a href="{% url 'delete' i.id %}">Delete</a></td>
-    </tr>
-    {% empty %}
-    <h3>No items in the list</h3>
-    {% endfor %}
-</table>
+      </tr>
+      {% empty %}
+      <h3>No items in the list</h3>
+      {% endfor %}
+    </tbody>
+  </table>
 
 {% endblock content %}
+
+{% comment %} <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">S.no</th>
+        <th scope="col">List</th>
+        <th scope="col">View</th>
+        <th scope="col">Update</th>
+        <th scope="col">Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for i in list %}
+      <tr>
+        <th scope="row">1</th>
+        <td>{{i.title}}</td>
+      </tr>
+      <tr>
+        <th scope="row">2</th>
+        <td><a href="{% url 'taskdetail' i.id %}">view</a></td>
+      </tr>
+      <tr>
+        <th scope="row">3</th>
+        <td><a href="{% url 'update' i.id %}">Update</a></td>
+      </tr>
+      <tr>
+        <th scope="row">4</th>
+        <td><a href="{% url 'delete' i.id %}">Delete</a></td>
+      </tr>
+      {% empty %}
+      <h3>No items in the list</h3>
+      {% endfor %}
+    </tbody>
+  </table> {% endcomment %}

@@ -1,5 +1,13 @@
-<h1>
-    Task: 
+{% extends 'base/main.html' %}
+
+{% block content %}
+
+{% include 'base/navbar_forview.html' %}
+
+<h1>Task: </h1>
+<div class="container">
     {{taskId.description}}
+</div>
     <!-- {{taskId.complete}} -->
-</h1>
+
+{% endblock content %}
